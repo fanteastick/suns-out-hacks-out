@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import math
 import pathlib
@@ -106,6 +107,25 @@ class faceFilter():
         size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
         return size
     
+    def addFilter(self, image, filtCat, filtN):  
+        ret, buf = cv2.imencode('.png', image)
+        stream = io.BytesIO(buf)
+        detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True)
+        img = Image.open(stream)
+        filt = self.filter_list[filtCat][filtN]
+        for face in detected_faces:
+            landmarks = face.face_landmarks
+            x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
+            y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
+            tilt = -math.atan(y/x)
+            tilt = tilt / np.pi * 180.0
+            f = filt.rotate(tilt, expand=1)
+            size = self.getGlassesSize(face, f)
+            f = f.resize(size, resample=PIL.Image.ANTIALIAS)
+            x_pos, y_pos = self.getEyePos(face, tilt, size)
+            img.paste(f, (x_pos, y_pos), f)
+        return img
+    
     def addFilterURL(self, imageURL, filtCat, filtN):  
         detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True)
         response = requests.get(single_face_image_url)
@@ -126,6 +146,12 @@ class faceFilter():
     
 single_face_image_url = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRfkrYgTxf2uCXFHxi7t2QUIaefqfcpsm-jGg&usqp=CAU'
 ffilt = faceFilter()
-img = ffilt.addFilterURL(single_face_image_url, 0, 0)
+# img = ffilt.addFilterURL(single_face_image_url, 0, 0)
+path_pics = pathlib.Path().cwd() / "pictures"
+list_of_pics = glob.glob(os.path.join(path_pics, '*'))
+image_list = []
+for pic in list_of_pics:
+    image_list.append(pic)
+img = cv2.imread(image_list[2])
+img = ffilt.addFilter(img, 0, 0)
 img.show()
-
