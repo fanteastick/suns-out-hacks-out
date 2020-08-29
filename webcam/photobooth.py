@@ -11,6 +11,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+# importing os module for saving 
+import os
+import time
+  
+# Image path 
+image_path = r'C:\Users\Rajnish\Desktop\GeeksforGeeks\geeks.png'
+
 
 # import Opencv module
 import cv2
@@ -54,9 +61,9 @@ class MainWindow(QWidget):
         height, width, channel = image.shape
         step = channel * width
         # create QImage from image
-        qImg = QImage(image.data, width, height, step, QImage.Format_RGB888)
+        self.qImg = QImage(image.data, width, height, step, QImage.Format_RGB888)
         # show image in img_label
-        self.ui.image_label.setPixmap(QPixmap.fromImage(qImg))
+        self.ui.image_label.setPixmap(QPixmap.fromImage(self.qImg))
 
     # start/stop timer
     def controlTimer(self):
@@ -74,6 +81,13 @@ class MainWindow(QWidget):
             self.timer.stop()
             # release video capture
             self.cap.release()
+
+            # saving the image w/ timestamp
+            homedir = os.path.expanduser("~")
+            savepath = homedir + "\Pictures\webcam" + str(int(time.time())) + ".jpg"
+            self.qImg.save(savepath)
+
+
             # update control_bt text
             self.ui.control_bt.setText("Start camera")
 
