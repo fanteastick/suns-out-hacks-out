@@ -5,7 +5,7 @@
 # Created by: PyQt5 UI code generator 5.5.1
 #
 # WARNING! All changes made in this file will be lost!
-
+import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Form(object):
@@ -23,12 +23,27 @@ class Ui_Form(object):
         self.control_bt.setObjectName("control_bt")
         self.verticalLayout.addWidget(self.control_bt)
         self.horizontalLayout.addLayout(self.verticalLayout)
-
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
+              
+        self.cb = QtWidgets.QComboBox()
+        self.cb.addItems(["Filter 1", "Filter 2", "Filter 3"])
+        self.cb.currentIndexChanged.connect(self.selectionchange)
+            
+        self.verticalLayout.addWidget(self.cb)
+
+    def selectionchange(self,i): # modify this later for when we want to do something w filters
+      print ("Items in the list are :")
+        
+      for count in range(self.cb.count()):
+         print (self.cb.itemText(count))
+      print ("Current index",i,"selection changed",self.cb.currentText())
+        
+
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Cam view"))
-        self.image_label.setText(_translate("Form", "TextLabel"))
+        Form.setWindowTitle(_translate("Starter", "Cam view"))
+        self.image_label.setText(_translate("Form", "Welcome to our photobooth! Choose your filter:"))
         self.control_bt.setText(_translate("Form", "Start"))
+        
