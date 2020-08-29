@@ -26,16 +26,18 @@ class Ui_Form(object):
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-              
+        
+        filter_options = ["Filter 1", "Filter 2", "Filter 3"]
         self.cb = QtWidgets.QComboBox()
-        self.cb.addItems(["Filter 1", "Filter 2", "Filter 3"])
+        self.cb.addItems(filter_options)
         self.cb.currentIndexChanged.connect(self.selectionchange)
             
         self.verticalLayout.addWidget(self.cb)
 
+    # function for keeping track of the selections made
     def selectionchange(self,i): # modify this later for when we want to do something w filters
+      # loop through all the options 
       print ("Items in the list are :")
-        
       for count in range(self.cb.count()):
          print (self.cb.itemText(count))
       print ("Current index",i,"selection changed",self.cb.currentText())
@@ -43,7 +45,8 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Starter", "Cam view"))
+        Form.setWindowTitle(_translate("Starting Sun's Out Photobooth", "☀ Sun's Out Photobooth ☀"))
         self.image_label.setText(_translate("Form", "Welcome to our photobooth! Choose your filter:"))
+        self.control_bt.setFont(QFont('Helvetica Neue', 10)) 
         self.control_bt.setText(_translate("Form", "Start"))
         

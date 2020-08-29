@@ -74,7 +74,7 @@ class MainWindow(QWidget):
             # start timer
             self.timer.start(20)
             # update control_bt text
-            self.ui.control_bt.setText("Stop camera")
+            self.ui.control_bt.setText("☀ Take Photo ☀")
         # if timer is started
         else:
             # stop timer
@@ -89,7 +89,7 @@ class MainWindow(QWidget):
 
 
             # update control_bt text
-            self.ui.control_bt.setText("Start camera")
+            self.ui.control_bt.setText("▶ Start camera ▶")
 
     def resizeEvent(self, event):
         super(MainWindow, self).resizeEvent(event)
@@ -123,6 +123,8 @@ class MainWindow(QWidget):
         height = int(frame.shape[0] * scale_percent / 100)
         dim = (width, height)
         return cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+
+    
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
