@@ -40,16 +40,6 @@ class MainWindow(QWidget):
         self.timer.timeout.connect(self.viewCam)
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
-        
-
-    def selectionchange(self,i):
-       print ("Items in the list are :")
-         
-       for count in range(self.cb.count()):
-          print (self.cb.itemText(count))
-       print ("Current index",i,"selection changed ",self.cb.currentText())
-
-
 
     # view camera
     def viewCam(self):
