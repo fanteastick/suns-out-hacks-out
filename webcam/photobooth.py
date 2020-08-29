@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Aug 29 12:03:50 2020
-
 @author: ellie
 """
 # import system module
@@ -24,7 +23,7 @@ global origLength
 global origWidth
 
 origWidth =  662
-origLength = 531
+origLength = 557
 
 class MainWindow(QWidget):
     # class constructor
@@ -40,6 +39,26 @@ class MainWindow(QWidget):
         self.timer.timeout.connect(self.viewCam)
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
+        
+        # everything for the dropdown menu
+        layout = QHBoxLayout()
+        self.cb = QComboBox()
+        self.cb.addItem("C")
+        self.cb.addItem("C++")
+        self.cb.addItems(["Java", "C#", "Python"])
+        self.cb.currentIndexChanged.connect(self.selectionchange)
+        layout.addWidget(self.cb)
+        self.setLayout(layout)
+        self.setWindowTitle("Sun's Out")
+
+    def selectionchange(self,i):
+       print ("Items in the list are :")
+         
+       for count in range(self.cb.count()):
+          print (self.cb.itemText(count))
+       print ("Current index",i,"selection changed ",self.cb.currentText())
+
+
 
     # view camera
     def viewCam(self):
@@ -89,7 +108,7 @@ class MainWindow(QWidget):
         if oldLength < 0 :
             oldLength = length
         else:
-            oldLength = 531
+            oldLength = 557
         if oldWidth < 0 :
             oldWidth = width
         else:
