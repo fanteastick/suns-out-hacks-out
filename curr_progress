@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 import asyncio
 import io
 import glob
@@ -10,6 +11,7 @@ import uuid
 import requests
 from urllib.parse import urlparse
 from io import BytesIO
+import PIL
 from PIL import Image, ImageDraw
 from azure.cognitiveservices.vision.face import FaceClient
 from msrest.authentication import CognitiveServicesCredentials
@@ -21,7 +23,7 @@ ENDPOINT = "https://facefilters.cognitiveservices.azure.com/"
 face_client = FaceClient(ENDPOINT, CognitiveServicesCredentials(KEY))
 
 # Detect a face in an image that contains a single face
-single_face_image_url = 'https://raw.githubusercontent.com/Microsoft/Cognitive-Face-Windows/master/Data/detection1.jpg'
+single_face_image_url = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQjZS41minKSe5fqJ33WgUsRLLA14mXoaE5lA&usqp=CAU'
 single_image_name = os.path.basename(single_face_image_url)
 detected_faces = face_client.face.detect_with_url(url=single_face_image_url, return_face_landmarks = True)
 if not detected_faces:
@@ -38,19 +40,97 @@ def getRectangle(faceDictionary):
     
     return ((left, top), (right, bottom))
 
+def getHeadPos(landmarks, tilt, size):
+    if tilt >= 0:
+        x_offset = landmarks.eyebrow_right_outer.x+(landmarks.eye_right_outer.x-landmarks.eye_right_inner.x)
+        x_pos = x_offset-size[0]
+        y_offset = landmarks.eyebrow_left_outer.y
+        y_pos = y_offset-size[1]
+    else:
+        x_offset = landmarks.eyebrow_left_outer.x-(landmarks.eye_left_inner.x-landmarks.eye_left_outer.x)
+        x_pos = x_offset
+        y_offset = landmarks.eyebrow_right_outer.y
+        y_pos = y_offset-size[1]
+    return int(x_pos), int(y_pos)
+
+def getHeadbandSize(landmarks, filt):
+    f_size = filt.size
+    x_size = face.face_rectangle.width+(landmarks.eye_left_inner.x-landmarks.eye_left_outer.x)
+    size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
+    return size
+
+def getEyePos(landmarks, tilt, size):
+    if tilt >= 0:
+        x_offset = landmarks.eyebrow_right_outer.x+(landmarks.eye_right_outer.x-landmarks.eye_right_inner.x)
+        x_pos = x_offset-size[0]
+        y_offset = landmarks.nose_left_alar_out_tip.y
+        y_pos = y_offset-size[1]
+    else:
+        x_offset = landmarks.eyebrow_left_outer.x-(landmarks.eye_left_inner.x-landmarks.eye_left_outer.x)
+        x_pos = x_offset
+        y_offset = landmarks.nose_right_alar_out_tip.y
+        y_pos = y_offset-size[1]
+    return int(x_pos), int(y_pos)
+
+def getGlassesSize(landmarks, filt):
+    f_size = filt.size
+    x_size = face.face_rectangle.width+(landmarks.eye_left_inner.x-landmarks.eye_left_outer.x)
+    size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
+    return size
+
+def getNeckPos(landmarks, tilt, size):
+    if tilt >= 10:
+        x_offset = landmarks.eyebrow_right_outer.x+(landmarks.nose_left_alar_out_tip.x-landmarks.eye_left_outer.x)
+        x_pos = x_offset-size[0]
+        y_offset = landmarks.under_lip_bottom.y+(landmarks.under_lip_bottom.y-landmarks.eye_left_outer.y)
+        y_pos = y_offset-size[1]
+    elif tilt >= 0:
+        x_offset = landmarks.eyebrow_right_outer.x
+        x_pos = x_offset-size[0]
+        y_offset = landmarks.under_lip_bottom.y+(landmarks.under_lip_bottom.y-landmarks.eye_left_outer.y)
+        y_pos = y_offset-size[1]
+    elif tilt > -10:
+        x_offset = landmarks.eyebrow_left_outer.x
+        x_pos = x_offset
+        y_offset = landmarks.under_lip_bottom.y+(landmarks.under_lip_bottom.y-landmarks.eye_right_outer.y)
+        y_pos = y_offset-size[1]
+    else:
+        x_offset = landmarks.eyebrow_left_outer.x-(landmarks.eye_right_outer.x-landmarks.nose_right_alar_out_tip.x)
+        x_pos = x_offset
+        y_offset = landmarks.under_lip_bottom.y+(landmarks.under_lip_bottom.y-landmarks.eye_right_outer.y)
+        y_pos = y_offset-size[1]
+    return int(x_pos), int(y_pos)
+
+def getNecklaceSize(landmarks, filt):
+    f_size = filt.size
+    x_size = landmarks.eyebrow_right_outer.x-landmarks.eyebrow_left_outer.x
+    size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
+    return size
 
 # Download the image from the url
 response = requests.get(single_face_image_url)
 img = Image.open(BytesIO(response.content))
-# filter = Image.open("C:" "\\" "Users" "\\" "YUSU" "\\" "Pictures" "\\" "Filters" "catears.png")
-# filter.show()
-
+filt = Image.open("C:" "\\" "Users" "\\" "YUSU" "\\" "Pictures" "\\" "Filters" "\\" "necklace.png")
+filt2 = Image.open("C:" "\\" "Users" "\\" "YUSU" "\\" "Pictures" "\\" "Filters" "\\" "sunglasses.png")
 # For each face returned use the face rectangle and draw a red box.
 print('Drawing rectangle around face... see popup for results.')
 draw = ImageDraw.Draw(img)
 for face in detected_faces:
     draw.rectangle(getRectangle(face), outline='red')
     landmarks = face.face_landmarks
-    draw.ellipse([(landmarks.nose_tip.x-2.5, landmarks.nose_tip.y-2.5), (landmarks.nose_tip.x+2.5, landmarks.nose_tip.y+2.5)], (255, 255, 255))
+    x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
+    y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
+    tilt = -math.atan(y/x)
+    tilt = tilt / np.pi * 180.0
+    f = filt.rotate(tilt, expand=1)
+    f2 = filt2.rotate(tilt, expand=1)
+    size = getNecklaceSize(landmarks, f)
+    f = f.resize(size, resample=PIL.Image.ANTIALIAS)
+    size2 = getGlassesSize(landmarks, f2)
+    f2 = f2.resize(size2, resample=PIL.Image.ANTIALIAS)
+    x_pos, y_pos = getNeckPos(landmarks, tilt, size)
+    x_pos2, y_pos2 = getEyePos(landmarks, tilt, size2)
+    img.paste(f, (x_pos, y_pos), f)
+    img.paste(f2, (x_pos2, y_pos2), f2)
 # Display the image in the users default image browser.
 img.show()
