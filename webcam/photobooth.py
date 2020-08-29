@@ -41,16 +41,6 @@ class MainWindow(QWidget):
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
         
-        # everything for the dropdown menu
-        layout = QHBoxLayout()
-        self.cb = QComboBox()
-        self.cb.addItem("C")
-        self.cb.addItem("C++")
-        self.cb.addItems(["Java", "C#", "Python"])
-        self.cb.currentIndexChanged.connect(self.selectionchange)
-        layout.addWidget(self.cb)
-        self.setLayout(layout)
-        self.setWindowTitle("Sun's Out")
 
     def selectionchange(self,i):
        print ("Items in the list are :")
