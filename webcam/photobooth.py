@@ -12,14 +12,23 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+
 # import Opencv module
 import cv2
 
 from ui_main_window import *
 
+global widthPercent
+global lengthPercent
+global origLength 
+global origWidth
+
+origWidth =  662
+origLength = 531
+
 class MainWindow(QWidget):
     # class constructor
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # call QWidget constructor
         super().__init__()
         self.ui = Ui_Form()
@@ -31,8 +40,7 @@ class MainWindow(QWidget):
         self.timer.timeout.connect(self.viewCam)
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
-
-
+        
         # everything for the dropdown menu
         layout = QHBoxLayout()
         self.cb = QComboBox()
@@ -59,7 +67,9 @@ class MainWindow(QWidget):
         ret, image = self.cap.read()
         # convert image to RGB format
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = self.rescale_frame(image)
         # get image infos
+
         height, width, channel = image.shape
         step = channel * width
         # create QImage from image
@@ -86,9 +96,38 @@ class MainWindow(QWidget):
             # update control_bt text
             self.ui.control_bt.setText("Start camera")
 
+    def resizeEvent(self, event):
+        super(MainWindow, self).resizeEvent(event)
+        length = event.size().height()
 
-    
+        oldWidth = event.oldSize().width()
+        width = event.size().width()
+        oldLength = event.oldSize().height()
+        listOfGlobals = globals()
+        print ("length", length)
+        print ("width", width)
+        if oldLength < 0 :
+            oldLength = length
+        else:
+            oldLength = 531
+        if oldWidth < 0 :
+            oldWidth = width
+        else:
+            oldWidth = 662
+        n = (width / oldWidth) * 100
+        m = (length / oldLength) * 100
+        listOfGlobals['widthPercent'] = n
+        listOfGlobals['lengthPercent'] = m
+        print("widthPercent", widthPercent)
+        print("lengthPercent", lengthPercent)
 
+        
+    def rescale_frame(self, frame):
+        scale_percent = min(widthPercent, lengthPercent)
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        return cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
