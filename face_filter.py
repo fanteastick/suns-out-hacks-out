@@ -11,5 +11,8 @@ if __name__ == '__main__':
     for pic in list_of_pics:
         image_list.append(pic)
     img = cv2.imread(image_list[2])
+    print('cv2 read image type: ', type(img))
     img = ffilt.addFilter(img, 0, 0)
-    img.show()
+    print('converted filter image type: ', type(img))
+    cv2.imshow('image with filter', img)
+    cv2.waitKey(0)
