@@ -1,30 +1,25 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Aug 29 12:03:50 2020
+
 @author: ellie
 """
 # import system module
 import sys
 
 # import some PyQt5 modules
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtGui import QImage
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QTimer
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 
-# importing os module for saving 
-import os
-import time
 
 # import Opencv module
 import cv2
 
-# importing UI
 from ui_main_window import *
-
-# importing all the ML face stuff
-import filter_pos # has the stuff from face_filter
-import emotions 
-
 
 global widthPercent
 global lengthPercent
@@ -32,7 +27,7 @@ global origLength
 global origWidth
 
 origWidth =  662
-origLength = 557
+origLength = 531
 
 class MainWindow(QWidget):
     # class constructor
@@ -48,8 +43,7 @@ class MainWindow(QWidget):
         self.timer.timeout.connect(self.viewCam)
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
-        self.filterPos = filter_pos.faceFilter()
-
+        
 
     # view camera
     def viewCam(self):
@@ -58,17 +52,14 @@ class MainWindow(QWidget):
         # convert image to RGB format
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.rescale_frame(image)
-
-        # grab image attributes before adding filter
-        height, width, channel = image.shape
-        imagedata = image.data # because of issues w/ opencv and PIL
-        
         # get image infos
+
+        height, width, channel = image.shape
         step = channel * width
         # create QImage from image
-        self.qImg = QImage(imagedata, width, height, step, QImage.Format_RGB888)
+        qImg = QImage(image.data, width, height, step, QImage.Format_RGB888)
         # show image in img_label
-        self.ui.image_label.setPixmap(QPixmap.fromImage(self.qImg))
+        self.ui.image_label.setPixmap(QPixmap.fromImage(qImg))
 
     # start/stop timer
     def controlTimer(self):
@@ -79,33 +70,15 @@ class MainWindow(QWidget):
             # start timer
             self.timer.start(20)
             # update control_bt text
-            self.ui.control_bt.setText("☀ Take Photo ☀")
+            self.ui.control_bt.setText("Stop")
         # if timer is started
         else:
             # stop timer
             self.timer.stop()
             # release video capture
             self.cap.release()
-
-
-            # saving the image w/ timestamp
-            homedir = os.path.expanduser("~")
-            savepath = homedir + "\Pictures\photobooth" + str(int(time.time())) + ".jpg"
-            self.qImg.save(savepath)
-
-            image = cv2.imread(savepath)
-            image = self.filterPos.addFilter(image, 0, 0)
-            # image, filtercategory, filternumber
-            # save without opencv: image.save(savepath)
-            cv2.imwrite(savepath, image)
-
-            #showing the filtered image?!?!
-            newPixmap = QPixmap(savepath)
-            self.ui.image_label.setPixmap(newPixmap)
-
             # update control_bt text
-            self.ui.control_bt.setText("▶ Start camera ▶")
-
+            self.ui.control_bt.setText("Start")
     def resizeEvent(self, event):
         super(MainWindow, self).resizeEvent(event)
         length = event.size().height()
@@ -114,10 +87,12 @@ class MainWindow(QWidget):
         width = event.size().width()
         oldLength = event.oldSize().height()
         listOfGlobals = globals()
+        print ("length", length)
+        print ("width", width)
         if oldLength < 0 :
             oldLength = length
         else:
-            oldLength = 566
+            oldLength = 531
         if oldWidth < 0 :
             oldWidth = width
         else:
@@ -126,16 +101,18 @@ class MainWindow(QWidget):
         m = (length / oldLength) * 100
         listOfGlobals['widthPercent'] = n
         listOfGlobals['lengthPercent'] = m
+        print("widthPercent", widthPercent)
+        print("lengthPercent", lengthPercent)
 
         
     def rescale_frame(self, frame):
+        global widthPercent
+        global lengthPercent
         scale_percent = min(widthPercent, lengthPercent)
         width = int(frame.shape[1] * scale_percent / 100)
         height = int(frame.shape[0] * scale_percent / 100)
         dim = (width, height)
         return cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
-
-    
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
