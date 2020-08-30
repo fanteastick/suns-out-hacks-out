@@ -94,7 +94,7 @@ class MainWindow(QWidget):
             self.qImg.save(savepath)
 
             image = cv2.imread(savepath)
-            image = self.filterPos.addFilter(image, 0, 0)
+            image = self.filterPos.addFilter(image, 0, self.ui.cb.currentIndex())
             # image, filtercategory, filternumber
             # save without opencv: image.save(savepath)
             cv2.imwrite(savepath, image)
