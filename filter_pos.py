@@ -33,8 +33,13 @@ class faceFilter():
         for file in list_of_paths:
             temp_set = glob.glob(os.path.join(file, '*.png'))
             self.filter_list.append([])
-            for img_path in temp_set:
-                self.filter_list[len(self.filter_list)-1].append(Image.open(img_path))
+            for i in range(len(temp_set)):
+                img_path = temp_set[i]
+                if img_path.find("2") != -1:
+                    self.filter_list[len(self.filter_list)-1][i-1].addFilter(Image.open(img_path))
+                else:
+                    filt = filterImage(Image.open(img_path))
+                    self.filter_list[len(self.filter_list)-1].append(filt)
         
     # returns approximate headgear position
     def getHeadPos(self, face, tilt, size):
@@ -114,6 +119,79 @@ class faceFilter():
         x_size = landmarks.eyebrow_right_outer.x-landmarks.eyebrow_left_outer.x
         size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
         return size
+    
+    def getEarsPos(self, face, tilt, size):
+        landmarks = face.face_landmarks
+        if tilt >= 0:
+            x_offset = landmarks.eyebrow_right_outer.x+(landmarks.pupil_right.x-landmarks.eyebrow_left_inner.x)
+            x_pos = x_offset-size[0]
+            y_offset = landmarks.eye_left_outer.y+(landmarks.eye_left_outer.y-landmarks.eye_right_outer.y)
+            y_pos = y_offset-size[1]
+        else:
+            x_offset = landmarks.eyebrow_left_outer.x-(landmarks.pupil_right.x-landmarks.eyebrow_left_inner.x)
+            x_pos = x_offset
+            y_offset = landmarks.eye_right_outer.y-(landmarks.eye_right_outer.y-landmarks.eye_left_outer.y)
+            y_pos = y_offset-size[1]
+        return int(x_pos), int(y_pos)
+    
+    def getEarsSize(self, face, filt):
+        landmarks = face.face_landmarks
+        f_size = filt.size
+        x_size = (landmarks.eyebrow_right_outer.x-landmarks.eyebrow_left_outer.x)*1.65
+        size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
+        return size
+    
+    def getMouthPos(self, face, tilt, size):
+        landmarks = face.face_landmarks
+        return int(landmarks.mouth_left.x), int(landmarks.mouth_left.y)
+    
+    def getMouthSize(self, face, filt):
+        landmarks = face.face_landmarks
+        f_size = filt.size
+        x_size = (landmarks.mouth_right.x-landmarks.mouth_left.x)
+        size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
+        return size
+    
+    def getNosePos(self, face, tilt, size):
+        landmarks = face.face_landmarks
+        return int(landmarks.nose_left_alar_top.x), int(landmarks.nose_left_alar_top.y)
+    
+    def getNoseSize(self, face, filt):
+        landmarks = face.face_landmarks
+        f_size = filt.size
+        x_size = (landmarks.nose_right_alar_out_tip.x-landmarks.nose_left_alar_out_tip.x)
+        size = (int(x_size), int(x_size/f_size[0] * f_size[1]))
+        return size
+    
+    
+    def assignPos(self, face, tilt, size, key):
+        if key == 0:
+            return self.getEarsPos(face, tilt, size)
+        elif key == 1:
+            return self.getEyePos(face, tilt, size)
+        elif key == 2:
+            return self.getHeadPos(face, tilt, size)
+        elif key == 3:
+            return self.getMouthPos(face, tilt, size)
+        elif key == 4:
+            return self.getNeckPos(face, tilt, size)
+        elif key == 5:
+            return self.getNosePos(face, tilt, size)
+        
+    
+    def assignSize(self, face, filt, key):
+        if key == 0:
+            return self.getEarsSize(face, filt)
+        elif key == 1:
+            return self.getGlassesSize(face, filt)
+        elif key == 2:
+            return self.getHeadbandSize(face, filt)
+        elif key == 3:
+            return self.getMouthSize(face, filt)
+        elif key == 4:
+            return self.getNecklaceSize(face, filt)
+        elif key == 5:
+            return self.getNoseSize(face, filt)
         
     # adds filter given a numpy.ndarray type image (OpenCV)
     def addFilter(self, image, filtCat, filtN, getEmotion=False):  
@@ -146,18 +224,42 @@ class faceFilter():
                 top_emotions.append(top_emotion)
                 top_emotion_id = emotion_mapping[top_emotion]
                 # Assumes we have 8 folders for the different the 8 different emotions
-                filt = self.filter_list[top_emotion_id][filtN]
+                filt_list = self.filter_list[top_emotion_id][filtN].getFilters()
             else:
-                filt = self.filter_list[filtCat][filtN]
+                filt_list = self.filter_list[filtCat][filtN].getFilters()
             
-            landmarks = face.face_landmarks
-            x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
-            y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
-            tilt = -math.atan(y/x)
-            tilt = tilt / np.pi * 180.0
-            f = filt.rotate(tilt, expand=1)
-            size = self.getGlassesSize(face, f)
-            f = f.resize(size, resample=PIL.Image.ANTIALIAS)
-            x_pos, y_pos = self.getEyePos(face, tilt, size)
-            img.paste(f, (x_pos, y_pos), f)
+            for i in range(len(filt_list)):
+                filt = filt_list[i]
+                landmarks = face.face_landmarks
+                x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
+                y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
+                tilt = -math.atan(y/x)
+                tilt = tilt / np.pi * 180.0
+                f = filt.rotate(tilt, expand=1)
+                if i == 1:
+                    if filtCat == 5:
+                        size = self.assignSize(face, f, 2)
+                elif getEmotion:
+                    size = self.assignSize(face, f, 1)
+                else:
+                    size = self.assignSize(face, f, filtCat)
+                f = f.resize(size, resample=PIL.Image.ANTIALIAS)
+                if i == 1:
+                    if filtCat == 5:
+                        x_pos, y_pos = self.assignPos(face, tilt, size, 2)
+                elif getEmotion:
+                    x_pos, y_pos = self.assignPos(face, tilt, size, 1)
+                else:
+                    x_pos, y_pos = self.assignPos(face, tilt, size, filtCat)
+                img.paste(f, (x_pos, y_pos), f)
         return top_emotions
+    
+class filterImage():
+    def __init__(self, image):
+        self.image_list = [image]
+    
+    def addFilter(self, image):
+        self.image_list.append(image)
+    
+    def getFilters(self):
+        return self.image_list
