@@ -194,7 +194,23 @@ class faceFilter():
             return self.getNoseSize(face, filt)
         
     # adds filter given a numpy.ndarray type image (OpenCV)
-    def addFilter(self, image, filtCat, filtN, getEmotion=False):  
+    def addFilterURL(self, imageURL, ind, getEmotion=False):  
+        filtN = 0
+        if ind = 0:
+            filtCat = 0
+        elif ind = 1:
+            filtCat = 1
+        elif ind = 2:
+            filtCat = 2
+        elif ind = 3:
+            filtCat = 2
+            filtN = 1
+        elif ind = 4:
+            filtCat = 3
+        elif ind = 5:
+            filtCat = 4:
+        elif ind = 6:
+            filtCat = 5
         ret, buf = cv2.imencode('.png', image)
         stream = io.BytesIO(buf)
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
