@@ -212,6 +212,8 @@ class faceFilter():
         elif ind == 6:
             filtCat = 5
         ret, buf = cv2.imencode('.png', image)
+        print(filtCat, " ", filtN)
+        print(len(self.filter_list[2]))
         stream = io.BytesIO(buf)
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
