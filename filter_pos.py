@@ -196,20 +196,20 @@ class faceFilter():
     # adds filter given a numpy.ndarray type image (OpenCV)
     def addFilterURL(self, imageURL, ind, getEmotion=False):  
         filtN = 0
-        if ind = 0:
+        if ind == 0:
             filtCat = 0
-        elif ind = 1:
+        elif ind == 1:
             filtCat = 1
-        elif ind = 2:
+        elif ind == 2:
             filtCat = 2
-        elif ind = 3:
+        elif ind == 3:
             filtCat = 2
             filtN = 1
-        elif ind = 4:
+        elif ind == 4:
             filtCat = 3
-        elif ind = 5:
+        elif ind == 5:
             filtCat = 4:
-        elif ind = 6:
+        elif ind == 6:
             filtCat = 5
         ret, buf = cv2.imencode('.png', image)
         stream = io.BytesIO(buf)
