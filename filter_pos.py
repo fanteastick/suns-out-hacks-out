@@ -194,7 +194,7 @@ class faceFilter():
             return self.getNoseSize(face, filt)
         
     # adds filter given a numpy.ndarray type image (OpenCV)
-    def addFilterURL(self, imageURL, ind, getEmotion=False):  
+    def addFilter(self, imageURL, ind, getEmotion=False):  
         filtN = 0
         if ind == 0:
             filtCat = 0
@@ -208,23 +208,13 @@ class faceFilter():
         elif ind == 4:
             filtCat = 3
         elif ind == 5:
-            filtCat = 4:
+            filtCat = 4
         elif ind == 6:
             filtCat = 5
         ret, buf = cv2.imencode('.png', image)
         stream = io.BytesIO(buf)
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
-        top_emotions = self.addFilterHelper(img, detected_faces, filtCat, filtN, getEmotion)
-        # Invert colors back to normal
-        open_cv_image = np.array(img)[:, :, ::-1]
-        return open_cv_image, top_emotions
-    
-    # adds filter given an image URL
-    def addFilterURL(self, imageURL, filtCat, filtN, getEmotion=False):  
-        detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True, return_face_attributes = ["emotion"])
-        response = requests.get(imageURL)
-        img = Image.open(BytesIO(response.content))
         top_emotions = self.addFilterHelper(img, detected_faces, filtCat, filtN, getEmotion)
         # Invert colors back to normal
         open_cv_image = np.array(img)[:, :, ::-1]
