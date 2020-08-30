@@ -8,6 +8,8 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+global currFilterIndex
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -34,13 +36,17 @@ class Ui_Form(object):
             
         self.verticalLayout.addWidget(self.cb)
 
+        currFilterIndex = 0
+
     # function for keeping track of the selections made
     def selectionchange(self,i): # modify this later for when we want to do something w filters
+      global currFilterIndex
       # loop through all the options 
       print ("Items in the list are :")
       for count in range(self.cb.count()):
          print (self.cb.itemText(count))
       print ("Current index",i,"selection changed",self.cb.currentText())
+      currFilterIndex = i
         
 
     def retranslateUi(self, Form):
