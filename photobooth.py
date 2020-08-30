@@ -22,8 +22,8 @@ import cv2
 from ui_main_window import *
 
 # importing all the ML face stuff
-from filter_pos import * # has the stuff from face_filter
-from emotions import *
+import filter_pos # has the stuff from face_filter
+import emotions 
 
 
 global widthPercent
@@ -48,7 +48,7 @@ class MainWindow(QWidget):
         self.timer.timeout.connect(self.viewCam)
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
-        
+        self.filterPos = filter_pos.faceFilter()
 
 
     # view camera
@@ -58,13 +58,18 @@ class MainWindow(QWidget):
         # convert image to RGB format
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.rescale_frame(image)
-        image = filter_pos.addFilter(image)
+
+        # grab image attributes before adding filter
+        height, width, channel = image.shape
+        imagedata = image.data # because of issues w/ opencv and PIL
+        
+        print(image)
         # get image infos
 
-        height, width, channel = image.shape
+        
         step = channel * width
         # create QImage from image
-        self.qImg = QImage(image.data, width, height, step, QImage.Format_RGB888)
+        self.qImg = QImage(imagedata, width, height, step, QImage.Format_RGB888)
         # show image in img_label
         self.ui.image_label.setPixmap(QPixmap.fromImage(self.qImg))
 
@@ -90,6 +95,9 @@ class MainWindow(QWidget):
             savepath = homedir + "\Pictures\webcam" + str(int(time.time())) + ".jpg"
             self.qImg.save(savepath)
 
+            image = cv2.imread(savepath)
+            image = self.filterPos.addFilter(image, 0, 0)
+            image.save(savepath)
 
             # update control_bt text
             self.ui.control_bt.setText("▶ Start camera ▶")
@@ -107,7 +115,7 @@ class MainWindow(QWidget):
         if oldLength < 0 :
             oldLength = length
         else:
-            oldLength = 557
+            oldLength = 566
         if oldWidth < 0 :
             oldWidth = width
         else:
