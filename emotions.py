@@ -2,14 +2,14 @@ import heapq
 
 # possible emotions: anger, contempt, disgust, fear, happiness,
 #                    neutral, sadness, surprise
-emotion_mapping = {'anger': 0,
-                   'contempt': 1,
-                   'disgust': 2,
-                   'fear': 3,
-                   'happiness': 4,
-                   'neutral': 5,
-                   'sadness': 6,
-                   'surprise': 7}
+emotion_mapping = {'anger': 6,
+                   'contempt': 7,
+                   'disgust': 8,
+                   'fear': 9,
+                   'happiness': 10,
+                   'neutral': 11,
+                   'sadness': 12,
+                   'surprise': 13}
 
 class FilterEmotions:
     def __init__(self, face):
