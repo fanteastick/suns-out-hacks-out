@@ -14,15 +14,17 @@ from PyQt5.QtWidgets import *
 # importing os module for saving 
 import os
 import time
-  
-# Image path 
-image_path = r'C:\Users\Rajnish\Desktop\GeeksforGeeks\geeks.png'
-
 
 # import Opencv module
 import cv2
 
+# importing UI
 from ui_main_window import *
+
+# importing all the ML face stuff
+from filter_pos import * # has the stuff from face_filter
+from emotions import *
+
 
 global widthPercent
 global lengthPercent
@@ -56,6 +58,7 @@ class MainWindow(QWidget):
         # convert image to RGB format
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.rescale_frame(image)
+        image = filter_pos.addFilter(image)
         # get image infos
 
         height, width, channel = image.shape
