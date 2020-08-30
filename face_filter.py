@@ -177,26 +177,3 @@ for pic in list_of_pics:
 img = cv2.imread(image_list[2])
 img = ffilt.addFilter(img, 0, 0)
 img.show()
-
-'''
-# Download the image from the url
-response = requests.get(single_face_image_url)
-img = Image.open(BytesIO(response.content))
-# filter = Image.open("catears.png")
-# filter.show()
-
-# For each face returned use the face rectangle and draw a red box.
-
-print('Drawing rectangle around face... see popup for results.')
-draw = ImageDraw.Draw(img)
-for face in detected_faces:
-    emote = face.face_attributes.emotion
-    emote_ident = FilterEmotions(emote)
-    print("Top emotion in this image is: ", emote_ident.get_top_emotion_name(), " with confidence: ", emote_ident.get_top_emotion_score())
-    
-    draw.rectangle(getRectangle(face), outline='red')
-    landmarks = face.face_landmarks
-    draw.ellipse([(landmarks.nose_tip.x-2.5, landmarks.nose_tip.y-2.5), (landmarks.nose_tip.x+2.5, landmarks.nose_tip.y+2.5)], (255, 255, 255))
-# Display the image in the users default image browser.
-img.show()
-'''
