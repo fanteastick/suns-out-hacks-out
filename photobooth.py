@@ -60,7 +60,7 @@ class MainWindow(QWidget):
 
         # write image, add filter, write it again
         image = cv2.imread(savepath)
-        image, top_emotions = self.filterPos.addFilter(image, 0, self.ui.cb.currentIndex(), self.ui.emotion_chkbox.isChecked())
+        image, top_emotions = self.filterPos.addFilter(image, self.ui.cb.currentIndex(), self.ui.emotion_chkbox.isChecked())
         cv2.imwrite(savepath, image)
 
         #showing the filtered image?!?!
