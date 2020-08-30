@@ -18,6 +18,7 @@ from azure.cognitiveservices.vision.face import FaceClient
 from msrest.authentication import CognitiveServicesCredentials
 from azure.cognitiveservices.vision.face.models import TrainingStatusType, Person, SnapshotObjectType, OperationStatusType
 
+from emotions import FilterEmotions, emotion_mapping
 
 class faceFilter():
     def __init__(self):
@@ -118,29 +119,27 @@ class faceFilter():
     def addFilter(self, image, filtCat, filtN):  
         ret, buf = cv2.imencode('.png', image)
         stream = io.BytesIO(buf)
-        detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True)
+        detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
-        filt = self.filter_list[filtCat][filtN]
-        for face in detected_faces:
-            landmarks = face.face_landmarks
-            x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
-            y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
-            tilt = -math.atan(y/x)
-            tilt = tilt / np.pi * 180.0
-            f = filt.rotate(tilt, expand=1)
-            size = self.getGlassesSize(face, f)
-            f = f.resize(size, resample=PIL.Image.ANTIALIAS)
-            x_pos, y_pos = self.getEyePos(face, tilt, size)
-            img.paste(f, (x_pos, y_pos), f)
+        self.addFilterHelper(img, detected_faces, filtCat, filtN)
         return img
     
     # adds filter given an image URL
-    def addFilterURL(self, imageURL, filtCat, filtN):  
-        detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True)
+    def addFilterURL(self, imageURL, filtCat, filtN=0):  
+        detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True, return_face_attributes = ["emotion"])
         response = requests.get(single_face_image_url)
         img = Image.open(BytesIO(response.content))
-        filt = self.filter_list[filtCat][filtN]
+        self.addFilterHelper(img, detected_faces, filtCat, filtN)
+        return img
+    
+    def addFilterHelper(self, img, detected_faces, filtCat, filtN=0):
         for face in detected_faces:
+            emote_ident = FilterEmotions(face.face_attributes.emotion)
+            top_emotion = emote_ident.get_top_emotion_name()
+            top_emotion_id = emotion_mapping[top_emotion]
+            # Assumes we have 8 folders for the different the 8 different emotions
+            filt = self.filter_list[top_emotion_id][filtN]
+            
             landmarks = face.face_landmarks
             x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
             y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
@@ -151,16 +150,3 @@ class faceFilter():
             f = f.resize(size, resample=PIL.Image.ANTIALIAS)
             x_pos, y_pos = self.getEyePos(face, tilt, size)
             img.paste(f, (x_pos, y_pos), f)
-        return img
-    
-single_face_image_url = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRfkrYgTxf2uCXFHxi7t2QUIaefqfcpsm-jGg&usqp=CAU'
-ffilt = faceFilter()
-# img = ffilt.addFilterURL(single_face_image_url, 0, 0)
-path_pics = pathlib.Path().cwd() / "pictures"
-list_of_pics = glob.glob(os.path.join(path_pics, '*'))
-image_list = []
-for pic in list_of_pics:
-    image_list.append(pic)
-img = cv2.imread(image_list[2])
-img = ffilt.addFilter(img, 0, 0)
-img.show()
