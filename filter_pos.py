@@ -121,10 +121,10 @@ class faceFilter():
         stream = io.BytesIO(buf)
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
-        self.addFilterHelper(img, detected_faces, filtCat, filtN)
+        top_emotions = self.addFilterHelper(img, detected_faces, filtCat, filtN)
         # Invert colors back to normal
         open_cv_image = np.array(img)[:, :, ::-1]
-        return open_cv_image
+        return open_cv_image, top_emotions
     
     # adds filter given an image URL
     def addFilterURL(self, imageURL, filtCat, filtN=0):  
@@ -137,9 +137,12 @@ class faceFilter():
         return open_cv_image
     
     def addFilterHelper(self, img, detected_faces, filtCat, filtN=0):
+        top_emotions = []
+
         for face in detected_faces:
             emote_ident = FilterEmotions(face)
             top_emotion = emote_ident.get_top_emotion_name()
+            top_emotions.append(top_emotion)
             top_emotion_id = emotion_mapping[top_emotion]
             # Assumes we have 8 folders for the different the 8 different emotions
             filt = self.filter_list[top_emotion_id][filtN]
@@ -154,3 +157,4 @@ class faceFilter():
             f = f.resize(size, resample=PIL.Image.ANTIALIAS)
             x_pos, y_pos = self.getEyePos(face, tilt, size)
             img.paste(f, (x_pos, y_pos), f)
+        return top_emotions

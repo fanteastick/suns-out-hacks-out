@@ -49,6 +49,24 @@ class MainWindow(QWidget):
         # set control_bt callback clicked  function
         self.ui.control_bt.clicked.connect(self.controlTimer)
         self.filterPos = filter_pos.faceFilter()
+        # self.qImg = None
+        self.ui.cb.currentIndexChanged.connect(self.updateFilter)
+
+    def updateFilter(self):
+        # saving the image w/ timestamp
+        homedir = os.path.expanduser("~")
+        savepath = homedir + "\Pictures\photobooth" + str(int(time.time())) + ".jpg"
+        self.qImg.save(savepath)
+
+        # write image, add filter, write it again
+        image = cv2.imread(savepath)
+        image, top_emotions = self.filterPos.addFilter(image, 0, self.ui.cb.currentIndex())
+        cv2.imwrite(savepath, image)
+
+        #showing the filtered image?!?!
+        newPixmap = QPixmap(savepath)
+        self.ui.image_label.setPixmap(newPixmap)
+        self.ui.emotion_label.setText("The emotions in this photo include: " + ", ".join(top_emotions))
 
 
     # view camera
@@ -80,6 +98,7 @@ class MainWindow(QWidget):
             self.timer.start(20)
             # update control_bt text
             self.ui.control_bt.setText("☀ Take Photo ☀")
+            self.ui.emotion_label.setText("This photobooth detects your emotions!")
         # if timer is started
         else:
             # stop timer
@@ -87,24 +106,15 @@ class MainWindow(QWidget):
             # release video capture
             self.cap.release()
 
+            # update the filter
+            self.updateFilter()
 
-            # saving the image w/ timestamp
-            homedir = os.path.expanduser("~")
-            savepath = homedir + "\Pictures\photobooth" + str(int(time.time())) + ".jpg"
-            self.qImg.save(savepath)
-
-            image = cv2.imread(savepath)
-            image = self.filterPos.addFilter(image, 0, self.ui.cb.currentIndex())
-            # image, filtercategory, filternumber
-            # save without opencv: image.save(savepath)
-            cv2.imwrite(savepath, image)
-
-            #showing the filtered image?!?!
-            newPixmap = QPixmap(savepath)
-            self.ui.image_label.setPixmap(newPixmap)
 
             # update control_bt text
             self.ui.control_bt.setText("▶ Start camera ▶")
+            
+
+            
 
     def resizeEvent(self, event):
         super(MainWindow, self).resizeEvent(event)
