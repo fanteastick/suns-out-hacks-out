@@ -127,14 +127,14 @@ class faceFilter():
     # adds filter given an image URL
     def addFilterURL(self, imageURL, filtCat, filtN=0):  
         detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True, return_face_attributes = ["emotion"])
-        response = requests.get(single_face_image_url)
+        response = requests.get(imageURL)
         img = Image.open(BytesIO(response.content))
         self.addFilterHelper(img, detected_faces, filtCat, filtN)
         return img
     
     def addFilterHelper(self, img, detected_faces, filtCat, filtN=0):
         for face in detected_faces:
-            emote_ident = FilterEmotions(face.face_attributes.emotion)
+            emote_ident = FilterEmotions(face)
             top_emotion = emote_ident.get_top_emotion_name()
             top_emotion_id = emotion_mapping[top_emotion]
             # Assumes we have 8 folders for the different the 8 different emotions

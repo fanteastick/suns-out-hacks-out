@@ -12,8 +12,9 @@ emotion_mapping = {'anger': 0,
                    'surprise': 7}
 
 class FilterEmotions:
-    def __init__(self, emotions):
+    def __init__(self, face):
         # Stores scores as (score, emotion name), top is max
+        emotions = face.face_attributes.emotion
         self.emotions = [(-emotions.__dict__[key], key) for key in emotions.__dict__ if type(emotions.__dict__[key]) == float]
         heapq.heapify(self.emotions)
             
