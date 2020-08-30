@@ -47,6 +47,5 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Starting Sun's Out Photobooth", "☀ Sun's Out Photobooth ☀"))
         self.image_label.setText(_translate("Form", "Welcome to our photobooth! Choose your filter:"))
-        self.control_bt.setFont(QFont('Helvetica Neue', 10)) 
         self.control_bt.setText(_translate("Form", "Start"))
         

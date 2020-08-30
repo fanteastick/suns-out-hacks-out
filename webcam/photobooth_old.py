@@ -106,6 +106,8 @@ class MainWindow(QWidget):
 
         
     def rescale_frame(self, frame):
+        global widthPercent
+        global lengthPercent
         scale_percent = min(widthPercent, lengthPercent)
         width = int(frame.shape[1] * scale_percent / 100)
         height = int(frame.shape[0] * scale_percent / 100)

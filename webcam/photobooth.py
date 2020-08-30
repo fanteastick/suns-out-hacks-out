@@ -84,7 +84,7 @@ class MainWindow(QWidget):
 
             # saving the image w/ timestamp
             homedir = os.path.expanduser("~")
-            savepath = homedir + "\Pictures\webcam" + str(int(time.time())) + ".jpg"
+            savepath = homedir + "/Pictures/webcam" + str(int(time.time())) + ".jpg"
             self.qImg.save(savepath)
 
 
@@ -124,7 +124,7 @@ class MainWindow(QWidget):
         dim = (width, height)
         return cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
 
-    
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
