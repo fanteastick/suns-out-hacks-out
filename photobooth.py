@@ -63,10 +63,7 @@ class MainWindow(QWidget):
         height, width, channel = image.shape
         imagedata = image.data # because of issues w/ opencv and PIL
         
-        print(image)
         # get image infos
-
-        
         step = channel * width
         # create QImage from image
         self.qImg = QImage(imagedata, width, height, step, QImage.Format_RGB888)
@@ -92,11 +89,12 @@ class MainWindow(QWidget):
 
             # saving the image w/ timestamp
             homedir = os.path.expanduser("~")
-            savepath = homedir + "\Pictures\webcam" + str(int(time.time())) + ".jpg"
+            savepath = homedir + "\Pictures\photobooth" + str(int(time.time())) + ".jpg"
             self.qImg.save(savepath)
 
             image = cv2.imread(savepath)
             image = self.filterPos.addFilter(image, 0, 0)
+            # image, filtercategory, filternumber
             image.save(savepath)
 
             # update control_bt text
@@ -110,8 +108,6 @@ class MainWindow(QWidget):
         width = event.size().width()
         oldLength = event.oldSize().height()
         listOfGlobals = globals()
-        print ("length", length)
-        print ("width", width)
         if oldLength < 0 :
             oldLength = length
         else:
@@ -124,8 +120,6 @@ class MainWindow(QWidget):
         m = (length / oldLength) * 100
         listOfGlobals['widthPercent'] = n
         listOfGlobals['lengthPercent'] = m
-        print("widthPercent", widthPercent)
-        print("lengthPercent", lengthPercent)
 
         
     def rescale_frame(self, frame):
