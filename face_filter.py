@@ -121,24 +121,7 @@ class faceFilter():
         stream = io.BytesIO(buf)
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
-        filt = self.filter_list[filtCat][filtN]
-        for face in detected_faces:
-            emote_ident = FilterEmotions(face.face_attributes.emotion)
-            top_emotion = emote_ident.get_top_emotion_name()
-            top_emotion_id = emotion_mapping[top_emotion]
-            # Assumes we have 8 folders for the different the 8 different emotions
-            filt = self.filter_list[top_emotion_id][filtN]
-
-            landmarks = face.face_landmarks
-            x = landmarks.eye_right_top.x-landmarks.eye_left_top.x
-            y = landmarks.eye_right_top.y-landmarks.eye_left_top.y
-            tilt = -math.atan(y/x)
-            tilt = tilt / np.pi * 180.0
-            f = filt.rotate(tilt, expand=1)
-            size = self.getGlassesSize(face, f)
-            f = f.resize(size, resample=PIL.Image.ANTIALIAS)
-            x_pos, y_pos = self.getEyePos(face, tilt, size)
-            img.paste(f, (x_pos, y_pos), f)
+        self.addFilterHelper(img, detected_faces, filtCat, filtN)
         return img
     
     # adds filter given an image URL
@@ -146,9 +129,12 @@ class faceFilter():
         detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True, return_face_attributes = ["emotion"])
         response = requests.get(single_face_image_url)
         img = Image.open(BytesIO(response.content))
-        filt = self.filter_list[filtCat][filtN]
+        self.addFilterHelper(img, detected_faces, filtCat, filtN)
+        return img
+    
+    def addFilterHelper(self, img, detected_faces, filtCat, filtN=0):
         for face in detected_faces:
-            emote_ident = FilterEmotions(face.face_attributes.emotions)
+            emote_ident = FilterEmotions(face.face_attributes.emotion)
             top_emotion = emote_ident.get_top_emotion_name()
             top_emotion_id = emotion_mapping[top_emotion]
             # Assumes we have 8 folders for the different the 8 different emotions
@@ -164,7 +150,7 @@ class faceFilter():
             f = f.resize(size, resample=PIL.Image.ANTIALIAS)
             x_pos, y_pos = self.getEyePos(face, tilt, size)
             img.paste(f, (x_pos, y_pos), f)
-        return img
+
 
 single_face_image_url = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRfkrYgTxf2uCXFHxi7t2QUIaefqfcpsm-jGg&usqp=CAU'
 ffilt = faceFilter()
@@ -177,26 +163,3 @@ for pic in list_of_pics:
 img = cv2.imread(image_list[2])
 img = ffilt.addFilter(img, 0, 0)
 img.show()
-
-'''
-# Download the image from the url
-response = requests.get(single_face_image_url)
-img = Image.open(BytesIO(response.content))
-# filter = Image.open("catears.png")
-# filter.show()
-
-# For each face returned use the face rectangle and draw a red box.
-
-print('Drawing rectangle around face... see popup for results.')
-draw = ImageDraw.Draw(img)
-for face in detected_faces:
-    emote = face.face_attributes.emotion
-    emote_ident = FilterEmotions(emote)
-    print("Top emotion in this image is: ", emote_ident.get_top_emotion_name(), " with confidence: ", emote_ident.get_top_emotion_score())
-    
-    draw.rectangle(getRectangle(face), outline='red')
-    landmarks = face.face_landmarks
-    draw.ellipse([(landmarks.nose_tip.x-2.5, landmarks.nose_tip.y-2.5), (landmarks.nose_tip.x+2.5, landmarks.nose_tip.y+2.5)], (255, 255, 255))
-# Display the image in the users default image browser.
-img.show()
-'''
