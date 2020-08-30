@@ -87,6 +87,7 @@ class MainWindow(QWidget):
             # release video capture
             self.cap.release()
 
+
             # saving the image w/ timestamp
             homedir = os.path.expanduser("~")
             savepath = homedir + "\Pictures\photobooth" + str(int(time.time())) + ".jpg"
@@ -95,7 +96,12 @@ class MainWindow(QWidget):
             image = cv2.imread(savepath)
             image = self.filterPos.addFilter(image, 0, 0)
             # image, filtercategory, filternumber
-            image.save(savepath)
+            # save without opencv: image.save(savepath)
+            cv2.imwrite(savepath, image)
+
+            #showing the filtered image?!?!
+            newPixmap = QPixmap(savepath)
+            self.ui.image_label.setPixmap(newPixmap)
 
             # update control_bt text
             self.ui.control_bt.setText("▶ Start camera ▶")
