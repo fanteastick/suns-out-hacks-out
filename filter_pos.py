@@ -122,7 +122,9 @@ class faceFilter():
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
         self.addFilterHelper(img, detected_faces, filtCat, filtN)
-        return img
+        # Invert colors back to normal
+        open_cv_image = np.array(img)[:, :, ::-1]
+        return open_cv_image
     
     # adds filter given an image URL
     def addFilterURL(self, imageURL, filtCat, filtN=0):  
@@ -130,7 +132,9 @@ class faceFilter():
         response = requests.get(imageURL)
         img = Image.open(BytesIO(response.content))
         self.addFilterHelper(img, detected_faces, filtCat, filtN)
-        return img
+        # Invert colors back to normal
+        open_cv_image = np.array(img)[:, :, ::-1]
+        return open_cv_image
     
     def addFilterHelper(self, img, detected_faces, filtCat, filtN=0):
         for face in detected_faces:
