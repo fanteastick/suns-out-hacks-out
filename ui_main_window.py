@@ -33,13 +33,6 @@ class Ui_Form(object):
         self.control_bt.setObjectName("control_bt")
         self.verticalLayout.addWidget(self.control_bt)
 
-        # emotion checkbox
-        self.emotion_chkbox = QtWidgets.QCheckBox(Form)
-        self.emotion_chkbox.setObjectName("emotion_chkbox")
-        self.emotion_chkbox.setText("Automatically detect emotion?")
-        self.verticalLayout.addWidget(self.emotion_chkbox)
-
-
 
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.retranslateUi(Form)
