@@ -116,36 +116,39 @@ class faceFilter():
         return size
         
     # adds filter given a numpy.ndarray type image (OpenCV)
-    def addFilter(self, image, filtCat, filtN):  
+    def addFilter(self, image, filtCat, filtN, getEmotion=False):  
         ret, buf = cv2.imencode('.png', image)
         stream = io.BytesIO(buf)
         detected_faces = self.face_client.face.detect_with_stream(stream, return_face_landmarks = True, return_face_attributes = ["emotion"])
         img = Image.open(stream)
-        top_emotions = self.addFilterHelper(img, detected_faces, filtCat, filtN)
+        top_emotions = self.addFilterHelper(img, detected_faces, filtCat, filtN, getEmotion)
         # Invert colors back to normal
         open_cv_image = np.array(img)[:, :, ::-1]
         return open_cv_image, top_emotions
     
     # adds filter given an image URL
-    def addFilterURL(self, imageURL, filtCat, filtN=0):  
+    def addFilterURL(self, imageURL, filtCat, filtN, getEmotion=False):  
         detected_faces = self.face_client.face.detect_with_url(imageURL, return_face_landmarks = True, return_face_attributes = ["emotion"])
         response = requests.get(imageURL)
         img = Image.open(BytesIO(response.content))
-        self.addFilterHelper(img, detected_faces, filtCat, filtN)
+        top_emotions = self.addFilterHelper(img, detected_faces, filtCat, filtN, getEmotion)
         # Invert colors back to normal
         open_cv_image = np.array(img)[:, :, ::-1]
-        return open_cv_image
+        return open_cv_image, top_emotions
     
-    def addFilterHelper(self, img, detected_faces, filtCat, filtN=0):
+    def addFilterHelper(self, img, detected_faces, filtCat, filtN, getEmotion):
         top_emotions = []
 
         for face in detected_faces:
-            emote_ident = FilterEmotions(face)
-            top_emotion = emote_ident.get_top_emotion_name()
-            top_emotions.append(top_emotion)
-            top_emotion_id = emotion_mapping[top_emotion]
-            # Assumes we have 8 folders for the different the 8 different emotions
-            filt = self.filter_list[top_emotion_id][filtN]
+            if getEmotion:
+                emote_ident = FilterEmotions(face)
+                top_emotion = emote_ident.get_top_emotion_name()
+                top_emotions.append(top_emotion)
+                top_emotion_id = emotion_mapping[top_emotion]
+                # Assumes we have 8 folders for the different the 8 different emotions
+                filt = self.filter_list[top_emotion_id][filtN]
+            else:
+                filt = self.filter_list[filtCat][filtN]
             
             landmarks = face.face_landmarks
             x = landmarks.eye_right_top.x-landmarks.eye_left_top.x

@@ -60,13 +60,16 @@ class MainWindow(QWidget):
 
         # write image, add filter, write it again
         image = cv2.imread(savepath)
-        image, top_emotions = self.filterPos.addFilter(image, 0, self.ui.cb.currentIndex())
+        image, top_emotions = self.filterPos.addFilter(image, 0, self.ui.cb.currentIndex(), self.ui.emotion_chkbox.isChecked())
         cv2.imwrite(savepath, image)
 
         #showing the filtered image?!?!
         newPixmap = QPixmap(savepath)
         self.ui.image_label.setPixmap(newPixmap)
-        self.ui.emotion_label.setText("The emotions in this photo include: " + ", ".join(top_emotions))
+        if self.ui.emotion_chkbox.isChecked():
+            self.ui.emotion_label.setText("The emotions in this photo include: " + ", ".join(top_emotions))
+        else:
+            self.ui.emotion_label.clear()
 
 
     # view camera
