@@ -203,10 +203,13 @@ class faceFilter():
         elif ind == 2:
             filtCat = 2
         elif ind == 3:
-            filtCat = 3
+            filtCat = 2
+            filtN = 1
         elif ind == 4:
-            filtCat = 4
+            filtCat = 3
         elif ind == 5:
+            filtCat = 4
+        elif ind == 6:
             filtCat = 5
         ret, buf = cv2.imencode('.png', image)
         print(filtCat, " ", filtN)
